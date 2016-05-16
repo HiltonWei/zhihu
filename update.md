@@ -1,3 +1,54 @@
+#1.7.3.11版更新说明
+0.  感谢@三皮同学的捐赠
+1.  感谢[@盒棍](https://www.zhihu.com/people/knarfeh)同学修复无法使用kindlegen将epub转为mobi的问题
+2.  修复由于知乎页面结构变化导致无法正常抓取网页的问题
+3.  修改数据库名，以避免由于老旧数据导致程序无法运行
+
+#1.7.3.10版更新说明
+0.  本次更新作者只改了两行代码，其余全部功能由知友[@xxNotepad](https://www.zhihu.com/people/xxnotepad)与[@盒棍](https://www.zhihu.com/people/knarfeh)完成，非常感谢！
+1.  感谢[@牛奶放姜](https://www.zhihu.com/people/niunaifangjiang),@九歌的捐赠
+2.  解决了由于知乎更新验证码获取方式，导致程序无法登陆的问题
+3.  优化ReadList不存在时的用户体验，当文件不存在时，自动生成一份空ReadList(该功能由[@xxNotepad](https://www.zhihu.com/people/xxnotepad)完成)
+4.  当抓取指定用户回答时，允许按照用户回答日期顺序进行排序(该功能由[@xxNotepad](https://www.zhihu.com/people/xxnotepad)完成)
+5.  解决不能生成专栏电子书的bug(该功能由[@盒棍](https://www.zhihu.com/people/knarfeh)
+6.  再次向为助手提交PR的开发者表示感谢！
+
+#1.7.3.9版更新说明
+0.  更新使用说明
+1.  优化电子书样式，解决问题详情不能跨页/作者头像遮挡签名/目录导航跨页的问题
+
+#1.7.3.8版更新说明
+0.  感谢[@Svenmax](https://www.zhihu.com/people/maxism)的捐赠
+1.  感谢[@盒棍](https://www.zhihu.com/people/knarfeh)提交的代码和issue
+2.  修复了解析回答日期错误的bug(由[@盒棍](https://www.zhihu.com/people/knarfeh)完成)
+3.  增加了自动打开验证码功能(由[@盒棍](https://www.zhihu.com/people/knarfeh))完成)
+4.  调整了电子书样式，新样式与知乎周刊效果类似，同时，使用bootstrap库对目录页面进行了美化
+5.  修复了如果没有选择记住密码，导致程序永久性无法运行的bug
+6.  修复了更换账号后不能下载私人收藏夹的bug
+7.  修复了检查更新时一处可能导致程序崩溃的bug
+
+#1.7.3.7版更新说明
+0.  在电子书开始处添加了目录，方便进行查阅
+1.  美化电子书样式
+2.  修改问题/答案/文章集锦的默认文件名，使用其内网页标题作为文件名
+3.  调整代码结构，终于把RawBook的名字给改掉了！（45°抬头望天）
+
+#1.7.3.6版更新说明
+0.  感谢[@五娃](https://www.zhihu.com/people/Alef)的捐赠
+1.  修复了一处由于br过多导致解析失败的bug
+2.  部分解决由于知乎全站迁移至https后导致的429错误
+
+#1.7.3.5版更新说明
+0.  修复一处由于opf属性设置错误导致epub无法打开的bug
+1.  简单调整了电子书的样式
+
+#1.7.3.4版更新说明
+0.  修复一处由于代码编写失误导致程序崩溃的bug
+1.  修复一处由于知乎站内数据不同步导致异常退出的bug
+2.  简单调整了下电子书样式(统一背景色，调整信息表格显示方式)
+3.  修复一处作者信息抓取不全的bug
+4.  更新epub库代码，将epub库从项目中独立了出来，如果有其他要生成epub的python程序的话将源码拷走即可使用
+
 #1.7.3.3版更新说明
 0.  修复一处抓取时会导致程序崩溃的bug
 1.  修复一处由于图片下载不全导致程序崩溃的bug

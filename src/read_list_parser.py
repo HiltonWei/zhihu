@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import re
 from src.container.task import SingleTask, TaskPackage
 from src.tools.debug import Debug
 from src.tools.match import Match
@@ -22,6 +21,7 @@ class ReadListParser():
             *   应该将同一book_list里的所有book输出到同一本电子书内，这样才符合当时的本意
             *   那就按章节进行区分吧，由RawBook负责进行生成处理
     """
+
     @staticmethod
     def get_task(command):
         u"""
@@ -40,7 +40,7 @@ class ReadListParser():
 
         raw_task_list = []
         for command in command_list:
-            raw_task = ReadListParser.parse_command(command.strip())
+            raw_task = ReadListParser.parse_command(command)
             if raw_task:
                 raw_task_list.append(raw_task)
 
@@ -78,9 +78,9 @@ class ReadListParser():
             task = SingleTask()
             task.kind = 'question'
 
-            task.spider.href = 'http://www.zhihu.com/question/{}'.format(question_id)
+            task.spider.href = 'https://www.zhihu.com/question/{}'.format(question_id)
             task.book.kind = 'question'
-            task.book.sql.info = ''
+            task.book.sql.info = ' question_id = "{}" '.format(question_id)
             task.book.sql.question = 'question_id = "{}"'.format(question_id)
             task.book.sql.answer = 'question_id = "{}"'.format(question_id)
             return task
@@ -91,12 +91,12 @@ class ReadListParser():
             answer_id = result.group('answer_id')
             task = SingleTask()
             task.kind = 'answer'
-            task.spider.href = 'http://www.zhihu.com/question/{}/answer/{}'.format(question_id, answer_id)
+            task.spider.href = 'https://www.zhihu.com/question/{}/answer/{}'.format(question_id, answer_id)
 
             task.book.kind = 'answer'
-            task.book.sql.info = ''
-            task.book.sql.question = 'question_id = "{}"'.format(question_id)
-            task.book.sql.answer = 'question_id = "{}" and answer_id = "{}"'.format(question_id, answer_id)
+            task.book.sql.info = ' question_id = "{}" '.format(question_id)
+            task.book.sql.question = ' question_id = "{}" '.format(question_id)
+            task.book.sql.answer = ' question_id = "{}" and answer_id = "{}" '.format(question_id, answer_id)
             return task
 
         def parse_author(command):
@@ -104,7 +104,7 @@ class ReadListParser():
             author_id = result.group('author_id')
             task = SingleTask()
             task.kind = 'author'
-            task.spider.href = 'http://www.zhihu.com/people/{}'.format(author_id)
+            task.spider.href = 'https://www.zhihu.com/people/{}'.format(author_id)
             task.book.kind = 'author'
             task.book.sql.info = 'select * from AuthorInfo where author_id = "{}"'.format(author_id)
             task.book.sql.question = 'select * from Question where question_id in (select question_id from Answer where author_id = "{}")'.format(
@@ -117,7 +117,7 @@ class ReadListParser():
             collection_id = result.group('collection_id')
             task = SingleTask()
             task.kind = 'collection'
-            task.spider.href = 'http://www.zhihu.com/collection/{}'.format(collection_id)
+            task.spider.href = 'https://www.zhihu.com/collection/{}'.format(collection_id)
             task.book.kind = 'collection'
             task.book.sql.info = 'select * from CollectionInfo where collection_id = "{}"'.format(
                 collection_id)
@@ -132,7 +132,7 @@ class ReadListParser():
             topic_id = result.group('topic_id')
             task = SingleTask()
             task.kind = 'topic'
-            task.spider.href = 'http://www.zhihu.com/topic/{}'.format(topic_id)
+            task.spider.href = 'https://www.zhihu.com/topic/{}'.format(topic_id)
             task.book.kind = 'topic'
             task.book.sql.info = 'select * from TopicInfo where topic_id = "{}"'.format(topic_id)
             task.book.sql.question = 'select * from Question where question_id in (select question_id from Answer where href in (select href from TopicIndex where topic_id = "{}"))'.format(
@@ -147,9 +147,9 @@ class ReadListParser():
             article_id = result.group('article_id')
             task = SingleTask()
             task.kind = 'article'
-            task.spider.href = 'http://zhuanlan.zhihu.com/{}/{}'.format(column_id, article_id)
+            task.spider.href = 'https://zhuanlan.zhihu.com/{}/{}'.format(column_id, article_id)
             task.book.kind = 'article'
-            task.book.sql.info = 'select * from ColumnInfo where column_id = "{}" '.format(column_id)
+            task.book.sql.info = ' column_id = "{}" and article_id = "{}" '.format(column_id, article_id)
             task.book.sql.question = ''
             task.book.sql.answer = ' column_id = "{}" and article_id = "{}" '.format(column_id, article_id)
             return task
@@ -159,7 +159,7 @@ class ReadListParser():
             column_id = result.group('column_id')
             task = SingleTask()
             task.kind = 'column'
-            task.spider.href = 'http://zhuanlan.zhihu.com/{}'.format(column_id)
+            task.spider.href = 'https://zhuanlan.zhihu.com/{}'.format(column_id)
             task.book.kind = 'column'
             task.book.sql.info = 'select * from ColumnInfo where column_id = "{}" '.format(column_id)
             task.book.sql.question = ''

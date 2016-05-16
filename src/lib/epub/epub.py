@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import os
 import zipfile
-from src.lib.epub.inf import INF
-from src.lib.epub.mime_type import MimeType
-from src.lib.epub.opf import OPF
-from src.lib.epub.toc import TOC
-from src.lib.epub.tools.epub_config import EpubConfig
-from src.lib.epub.tools.epub_path import EpubPath
 
-from src.tools.debug import Debug
-from src.tools.path import Path
+from .directory import Directory
+from .inf import INF
+from .mime_type import MimeType
+from .opf import OPF
+from .toc import TOC
+from .tools.epub_config import EpubConfig
+from .tools.epub_path import EpubPath
+from .zhihuhelp_tools.debug import Debug
+from .zhihuhelp_tools.path import Path
 
 
 class Epub(object):
@@ -18,9 +19,22 @@ class Epub(object):
         self.meta_inf = INF()
         self.opf = OPF()
         self.toc = TOC()
+        self.directory = Directory()
         self.title = title
         self.set_title(title)
         self.init_path()
+        self.init_index()
+        return
+
+    def init_index(self):
+        # 目录先放图片文件夹里
+        open(EpubPath.style_path + u'/index.xhtml', 'w')
+        self.add_index_html(EpubPath.style_path + u'/index.xhtml', u'目录')
+        return
+
+    def write_index(self):
+        with open(EpubPath.html_path + u'/index.xhtml', 'w') as index:
+            index.write(self.directory.get_content())
         return
 
     def init_path(self):
@@ -30,7 +44,12 @@ class Epub(object):
         EpubPath.init_epub_path(Path.get_pwd())
         return
 
-    def add_html(self, src, title):
+    @staticmethod
+    def set_output_path(output_path):
+        EpubPath.set_output_path(output_path)
+        return
+
+    def add_index_html(self, src, title):
         Path.copy(src, EpubPath.html_path)
         filename = Path.get_filename(src)
         new_src = u'html/' + filename
@@ -38,17 +57,27 @@ class Epub(object):
         self.toc.add_item(resource_id, new_src, title)
         return
 
+    def add_html(self, src, title):
+        u"""
+            add_index为add_html不需要添加文件时的特殊情况
+        """
+        self.add_index_html(src, title)
+        filename = Path.get_filename(src)
+        new_src = u'html/' + filename
+        self.directory.add_html(new_src, title)
+        return
+
     def add_css(self, src):
         Path.copy(src, EpubPath.style_path)
         filename = Path.get_filename(src)
-        new_src = u'css/' + filename
+        new_src = u'style/' + filename
         resource_id = self.opf.add_css(new_src)
         return
 
     def add_image(self, src):
         Path.copy(src, EpubPath.image_path)
         filename = Path.get_filename(src)
-        new_src = u'image/' + filename
+        new_src = u'images/' + filename
         resource_id = self.opf.add_image(new_src)
         return
 
@@ -57,13 +86,14 @@ class Epub(object):
         filename = Path.get_filename(src)
         new_src = u'html/' + filename
         resource_id = self.opf.add_title_page_html(new_src)
+        self.directory.add_html(new_src, title)
         self.toc.add_item(resource_id, new_src, title)
         return
 
     def add_cover_image(self, src):
         Path.copy(src, EpubPath.image_path)
         filename = Path.get_filename(src)
-        new_src = u'image/' + filename
+        new_src = u'images/' + filename
         resource_id = self.opf.add_cover_image(new_src)
         return
 
@@ -73,21 +103,22 @@ class Epub(object):
         self.mime_type.create()
         self.opf.create()
         self.toc.create()
+        self.write_index()
         self.zip_to_epub()
         return
 
     def zip_to_epub(self):
         epub_name = self.title + u'.epub'
-        file_path = Path.result_path +  '/' + epub_name
+        file_path = EpubPath.output_path + '/' + epub_name
         EpubPath.reset_path()
         epub = zipfile.ZipFile(file=file_path, mode='w', compression=zipfile.ZIP_STORED, allowZip64=True)
         epub.write('./mimetype')
-        for parent,dirnames,filenames in os.walk('.'):
+        for parent, dirnames, filenames in os.walk('.'):
             for filename in filenames:
                 if filename in [epub_name, 'mimetype']:
                     continue
                 Debug.print_in_single_line(u'将{}添加至电子书内'.format(filename))
-                epub.write(parent +'/'+ filename, compress_type=zipfile.ZIP_STORED)
+                epub.write(parent + '/' + filename, compress_type=zipfile.ZIP_STORED)
         epub.close()
         return
 
@@ -96,10 +127,12 @@ class Epub(object):
         filename = Path.get_filename(src)
         new_src = u'html/' + filename
         resource_id = self.opf.add_title_page_html(new_src)
+        self.directory.create_chapter(new_src, title)
         self.toc.create_chapter(resource_id, new_src, title)
         return
 
     def finish_chapter(self):
+        self.directory.finish_chapter()
         self.toc.finish_chapter()
         return
 
@@ -115,4 +148,8 @@ class Epub(object):
     def set_book_id(self, book_id=EpubConfig.book_id, uid=EpubConfig.uid):
         self.opf.set_book_id(book_id, uid)
         self.toc.set_uid(uid)
+        return
+
+    def set_language(self, language):
+        self.opf.set_language(language)
         return

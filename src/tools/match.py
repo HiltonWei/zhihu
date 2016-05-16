@@ -46,6 +46,7 @@ class Match(object):
     def fix_html(content=''):
         content = content.replace('</br>', '').replace('</img>', '')
         content = content.replace('<br>', '<br/>')
+        content = content.replace('href="//link.zhihu.com', 'href="https://link.zhihu.com')  # 修复跳转链接
         for item in re.findall(r'\<noscript\>.*?\</noscript\>', content, re.S):
             content = content.replace(item, '')
         return content
@@ -64,8 +65,9 @@ class Match(object):
             '"': '〃',
             '!': '！',
             '\n': '',
-            '\r': ''
+            '\r': '',
+            '&': 'and',
         }
-        for key,value in illegal.items():
+        for key, value in illegal.items():
             filename = filename.replace(key, value)
-        return unicode(filename[:50])
+        return unicode(filename[:80])

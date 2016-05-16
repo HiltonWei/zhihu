@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from src.lib.epub.tools.epub_path import EpubPath
+from .tools.epub_path import EpubPath
+
 
 class MimeType(object):
     def __init__(self):
@@ -7,6 +8,6 @@ class MimeType(object):
         return
 
     def create(self):
-        with open(EpubPath.base_path + '/mimetype', 'w') as mimetype:
+        with open(EpubPath.work_path + '/mimetype', 'w') as mimetype:
             mimetype.write(self.content)
         return

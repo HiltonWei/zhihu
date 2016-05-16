@@ -2,6 +2,7 @@
 import logging
 import logging.handlers
 import sys
+
 from src.tools.config import Config
 
 
@@ -9,19 +10,7 @@ class Debug(object):
     u"""
     打印日志
     """
-    logging.basicConfig(level=logging.DEBUG,
-                format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-                datefmt='%a, %d %b %Y %H:%M:%S',
-                filename='myapp.log',
-                filemode='w')
-    handler = logging.StreamHandler()  # 实例化handler
-    fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'
-
-    formatter = logging.Formatter(fmt)  # 实例化formatter
-    handler.setFormatter(formatter)  # 为handler添加formatter
-
     logger = logging.getLogger('main')  # 获取名为main的logger
-    logger.addHandler(handler)  # 为logger添加handler
     if Config.debug:
         logger.setLevel(logging.DEBUG)  # debug模式
     else:
@@ -36,7 +25,7 @@ class Debug(object):
             sys.stdout.write(text)
             sys.stdout.flush()
         except:
-            Debug.logger.info(u'error')
+            pass
         return
 
     @staticmethod
@@ -53,11 +42,10 @@ class Debug(object):
         except UnicodeEncodeError as error:
             Debug.logger.info(u'编码异常')
             Debug.logger.info(u'系统默认编码为：' + sys.getdefaultencoding())
-            #raise error
+            # raise error
         return
 
     @staticmethod
     def print_config():
-        Config._sync()
-        Debug.print_dict(Config._config_store)
+        Debug.print_dict(Config.__dict__)
         return

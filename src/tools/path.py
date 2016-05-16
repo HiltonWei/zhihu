@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
+import locale
 
 
 class Path(object):
-    try:
-        base_path = unicode(os.path.abspath('.').decode('gbk'))  # 初始地址,不含分隔符
-    except:
-        base_path = os.path.abspath('.')  # 对于Mac和Linux用户，使用gbk解码反而会造成崩溃，故添加一个try-except，以防万一
+    # 初始地址,不含分隔符
+    # 此时sys.stdout.encoding已被修改为utf-8，故改为使用locale.getpreferredencoding()获取默认编码
+    base_path = unicode(os.path.abspath('.').decode(locale.getpreferredencoding()))
 
     config_path = base_path + u'/config.json'
-    db_path = base_path + u'/zhihuDB_173.db'
+    db_path = base_path + u'/zhihuDB_173_1.db'
     sql_path = base_path + u'/db/zhihuhelp.sql'
 
     www_css = base_path + u'/www/css'
-    www_image = base_path + u'/www/image'
+    www_image = base_path + u'/www/images'
 
     html_pool_path = base_path + u'/知乎电子书临时资源库/知乎网页池'
     image_pool_path = base_path + u'/知乎电子书临时资源库/知乎图片池'
-    result_path = base_path + u'./知乎助手生成的电子书'
-    answer_path = base_path + u'./答案'
+    result_path = base_path + u'/知乎助手生成的电子书'
 
     @staticmethod
     def reset_path():
@@ -33,10 +32,7 @@ class Path(object):
 
     @staticmethod
     def get_pwd():
-        try:
-            path = unicode(os.path.abspath('.').decode('gbk'))  # 初始地址,不含分隔符
-        except:
-            path = os.path.abspath('.')  # 对于Mac和Linux用户，使用gbk解码反而会造成崩溃，故添加一个try-except，以防万一
+        path = unicode(os.path.abspath('.').decode(locale.getpreferredencoding()))
         return path
 
     @staticmethod
@@ -48,13 +44,6 @@ class Path(object):
             pass
         return
 
-    @staticmethod
-    def mkdirs(path):
-        try:
-            os.makedirs(path)
-        except Error:
-            return False
-        return True
     @staticmethod
     def chdir(path):
         try:
@@ -88,22 +77,18 @@ class Path(object):
 
     @staticmethod
     def init_base_path():
-        try:
-            base_path = unicode(os.path.abspath('.').decode('gbk'))  # 初始地址,不含分隔符
-        except:
-            base_path = os.path.abspath('.')  # 对于Mac和Linux用户，使用gbk解码反而会造成崩溃，故添加一个try-except，以防万一
+        Path.base_path = Path.get_pwd()
 
         Path.config_path = Path.base_path + u'/config.json'
-        Path.db_path = Path.base_path + u'/zhihuDB_173.db'
+        Path.db_path = Path.base_path + u'/zhihuDB_173_1.db'
         Path.sql_path = Path.base_path + u'/db/zhihuhelp.sql'
 
         Path.www_css = Path.base_path + u'/www/css'
-        Path.www_image = Path.base_path + u'/www/image'
+        Path.www_image = Path.base_path + u'/www/images'
 
         Path.html_pool_path = Path.base_path + u'/知乎电子书临时资源库/知乎网页池'
         Path.image_pool_path = Path.base_path + u'/知乎电子书临时资源库/知乎图片池'
-        Path.result_path = Path.base_path + u'./知乎助手生成的电子书'
-        Path.answer_path = base_path + u'./答案'
+        Path.result_path = Path.base_path + u'/知乎助手生成的电子书'
 
         return
 
@@ -121,9 +106,3 @@ class Path(object):
     @staticmethod
     def is_file(path):
         return os.path.isfile(path)
-    @staticmethod
-    def is_dir(path):
-        return os.path.isdir(path)
-    @staticmethod
-    def join_dir(path,filename):
-        return os.path.join(path,filename)

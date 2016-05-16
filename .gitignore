@@ -1,4 +1,4 @@
-
+/config.json
 /.idea/dataSources.local.xml
 /.idea/workspace.xml
 /.idea/ZhihuHelp__Python.iml
@@ -72,14 +72,12 @@ build/
 *.tlb
 *.tli
 *.tlh
-*.tmp
 *.tmp_proj
 *.log
 *.vspscc
 *.vssscc
 .builds
 *.pidb
-*.log
 *.scc
 
 # Visual C++ cache files
@@ -197,12 +195,14 @@ $RECYCLE.BIN/
 *.egg
 *.egg-info
 dist/
-build/
 eggs/
 parts/
 var/
 sdist/
 develop-eggs/
+.idea/
+知乎电子书临时资源库/
+知乎助手生成的电子书/
 .installed.cfg
 
 # Installer logs
@@ -219,11 +219,26 @@ pip-log.txt
 .mr.developer.cfg
 
 #Mine
-#/config.json
-#ReadList.txt
+ReadList.txt
 misc.xml
 *.db
 *.ini
 zhihuhelp1.7.0/我是登陆知乎时的验证码.gif
 .idea/workspace.xml
 我是登陆知乎时的验证码.gif
+
+*.jpg
+
+*.xml
+
+*.xhtml
+
+*.epub
+
+*.opf
+
+*.ncx
+
+*.html
+
+*.css

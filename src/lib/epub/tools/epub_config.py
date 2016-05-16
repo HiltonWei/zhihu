@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from src.tools.path import Path
+from .epub_path import EpubPath
 
 
 class EpubConfig(object):
@@ -7,7 +7,7 @@ class EpubConfig(object):
     用于记录epub创建过程中所需用到的常量
     比如，常见模板的实际路径
     """
-    base_path =  Path.base_path + u'/src/lib/epub/template'
+    base_path = EpubPath.base_path + u'/template'
     # META-INF
     container_uri = base_path + u'/META-INF/container/container.xml'
     duokan_container_uri = base_path + u'/META-INF/duokan_container/duokan-extension.xml'
@@ -25,6 +25,7 @@ class EpubConfig(object):
     metadata_creator_uri = base_path + u'/OEBPS/opf/metadata/creator.xml'
     metadata_book_id_uri = base_path + u'/OEBPS/opf/metadata/book_id.xml'
     metadata_title_uri = base_path + u'/OEBPS/opf/metadata/title.xml'
+    metadata_language_uri = base_path + u'/OEBPS/opf/metadata/language.xml'
 
     ### manifest
     manifest_item_uri = base_path + u'/OEBPS/opf/manifest/item.xml'
@@ -46,9 +47,17 @@ class EpubConfig(object):
     ### ncx
     ncx_item_uri = base_path + u'/OEBPS/toc/navMap/item.xml'
 
+    # Directory
+    directory_item_root_uri = base_path + u'/directory/item_root.html'
+    directory_item_leaf_uri = base_path + u'/directory/item_leaf.html'
+    directory_chapter_uri = base_path + u'/directory/chapter.html'
+    directory_finish_chapter_uri = base_path + u'/directory/finish_chapter.html'
+    directory_content_uri = base_path + u'/directory/content.html'
+
     # Default
     book_id = u'create_by_yaozeyuan'
     book_title = u'no_title'
     creator = u'zhihuhelp'
     uid = u'urn:uuid:create-by-yao-ze-yuan-Tsingtao'
     identifier = u''
+    language = u'zh'

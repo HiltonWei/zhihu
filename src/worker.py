@@ -2,12 +2,10 @@
 
 import json  # 用于JsonWorker
 
-
-from src.parser.author import AuthorParser
-from src.parser.collection import CollectionParser
-from src.parser.question import QuestionParser
-from src.parser.topic import TopicParser
-from src.tools.config import Config
+from src.lib.zhihu_parser.author import AuthorParser
+from src.lib.zhihu_parser.collection import CollectionParser
+from src.lib.zhihu_parser.question import QuestionParser
+from src.lib.zhihu_parser.topic import TopicParser
 from src.tools.controler import Control
 from src.tools.db import DB
 from src.tools.debug import Debug
@@ -21,6 +19,7 @@ class PageWorker(object):
         self.task_complete_set = set()
         self.work_set = set()  # 待抓取网址池
         self.work_complete_set = set()  # 已完成网址池
+        self.content_list = []  # 用于存放已抓取的内容
         self.answer_list = []
         self.question_list = []
 
@@ -50,8 +49,6 @@ class PageWorker(object):
         finally:
             return max_page
 
-
-
     def create_save_config(self):
         config = {'Answer': self.answer_list, 'Question': self.question_list, }
         return config
@@ -79,19 +76,6 @@ class PageWorker(object):
         self.save()
         return
 
-    def reCreate_work_set(self, target_url , subUrl='',pageFlag ='?'):
-        if target_url in self.task_complete_set:
-            return
-        content = Http.get_content(target_url + subUrl)
-        if not content:
-            return
-        self.task_complete_set.add(target_url)
-        max_page = self.parse_max_page(content)
-        for page in range(max_page):
-            url = '{}{}{}page={}'.format(target_url, subUrl ,pageFlag, page + 1)
-            self.work_set.add(url)
-        return
-
     def create_work_set(self, target_url):
         if target_url in self.task_complete_set:
             return
@@ -105,9 +89,6 @@ class PageWorker(object):
             self.work_set.add(url)
         return
 
-    def create_work_set(self, target_url):
-        self.reCreate_work_set(target_url+'?nr=1&sort=created','&')
-        return
     def clear_work_set(self):
         self.work_set = set()
         return
@@ -127,7 +108,8 @@ class PageWorker(object):
         content = Http.get_content(target_url)
         if not content:
             return
-        self.parse_content(content)
+        content = Match.fix_html(content)  # 需要修正其中的<br>标签，避免爆栈
+        self.content_list.append(content)
         Debug.logger.debug(u'{}的内容抓取完成'.format(target_url))
         self.work_complete_set.add(target_url)
         return
@@ -144,6 +126,13 @@ class PageWorker(object):
         argv = {'func': self.worker,  # 所有待存入数据库中的数据都应当是list
                 'iterable': a, }
         Control.control_center(argv, self.work_set)
+        Debug.logger.info(u"所有内容抓取完毕，开始对页面进行解析")
+        i = 0
+        for content in self.content_list:
+            i += 1
+            Debug.print_in_single_line(u"正在解析第{}/{}张页面".format(i, self.content_list.__len__()))
+            self.parse_content(content)
+        Debug.logger.info(u"网页内容解析完毕")
         return
 
     def catch_info(self, target_url):
@@ -153,7 +142,6 @@ class PageWorker(object):
         argv = {'func': self.catch_info, 'iterable': self.info_url_set, }
         Control.control_center(argv, self.info_url_set)
         return
-
 
 class QuestionWorker(PageWorker):
     def parse_content(self, content):
@@ -173,9 +161,15 @@ class AuthorWorker(PageWorker):
     def create_work_set(self, target_url):
         if target_url in self.task_complete_set:
             return
-        self.reCreate_work_set(target_url, '/answers?order_by=vote_num','&')
+        content = Http.get_content(target_url + '/answers?order_by=vote_num')
+        if not content:
+            return
+        self.task_complete_set.add(target_url)
+        max_page = self.parse_max_page(content)
+        for page in range(max_page):
+            url = '{}/answers?order_by=vote_num&page={}'.format(target_url, page + 1)
+            self.work_set.add(url)
         return
-        
 
     def catch_info(self, target_url):
         if target_url in self.info_url_complete_set:
@@ -199,7 +193,16 @@ class CollectionWorker(PageWorker):
         return
 
     def create_work_set(self, target_url):
-        self.reCreate_work_set(target_url)
+        if target_url in self.task_complete_set:
+            return
+        content = Http.get_content(target_url)
+        if not content:
+            return
+        self.task_complete_set.add(target_url)
+        max_page = self.parse_max_page(content)
+        for page in range(max_page):
+            url = '{}?page={}'.format(target_url, page + 1)
+            self.work_set.add(url)
         return
 
     def catch_info(self, target_url):
@@ -241,7 +244,16 @@ class TopicWorker(PageWorker):
         return
 
     def create_work_set(self, target_url):
-        self.reCreate_work_set(target_url,'/top-answers?')
+        if target_url in self.task_complete_set:
+            return
+        content = Http.get_content(target_url + '/top-answers')
+        if not content:
+            return
+        self.task_complete_set.add(target_url)
+        max_page = self.parse_max_page(content)
+        for page in range(max_page):
+            url = '{}/top-answers?page={}'.format(target_url, page + 1)
+            self.work_set.add(url)
         return
 
     def catch_info(self, target_url):
@@ -292,8 +304,8 @@ class ColumnWorker(PageWorker):
         if target_url in self.task_complete_set:
             return
         result = Match.column(target_url)
-        column_id = result.group('column_id')
-        content = Http.get_content('http://zhuanlan.zhihu.com/api/columns/' + column_id)
+        self.column_id = result.group('column_id')
+        content = Http.get_content('https://zhuanlan.zhihu.com/api/columns/' + self.column_id)
         if not content:
             return
         raw_info = json.loads(content)
@@ -314,7 +326,7 @@ class ColumnWorker(PageWorker):
         info['description'] = raw_info['description']
         self.info_list.append(info)
         self.task_complete_set.add(target_url)
-        detect_url = 'http://zhuanlan.zhihu.com/api/columns/{}/posts?limit=10&offset='.format(column_id)
+        detect_url = 'https://zhuanlan.zhihu.com/api/columns/{}/posts?limit=10&offset='.format(self.column_id)
         for i in range(info['article'] / 10 + 1):
             self.work_set.add(detect_url + str(i * 10))
         return
@@ -330,10 +342,11 @@ class ColumnWorker(PageWorker):
             article['author_logo'] = info['author']['avatar']['template'].replace('{id}', info['author']['avatar'][
                 'id']).replace('_{size}', '')
 
-            article['column_id'] = info['column']['slug']
-            article['name'] = info['column']['name']
+            article['column_id'] = self.column_id #info['slug']
+            article['name'] = info['title']
             article['article_id'] = info['slug']
-            article['href'] = u'http://zhuanlan.zhihu.com/{column_id}/{article_id}'.format(**article)
+            url = info['url']
+            article['href'] = u'https://zhuanlan.zhihu.com' + url
             article['title'] = info['title']
             article['title_image'] = info['titleImage']
             article['content'] = info['content']

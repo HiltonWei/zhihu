@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from src.lib.epub.tools.epub_config import EpubConfig
+from .epub_config import EpubConfig
 
 
 class Base(object):
@@ -7,8 +7,8 @@ class Base(object):
         self.content = ''
         return
 
-    def get_template(self, template_kind,template_name):
-        template_uri = '{}_{}_uri'.format(template_kind,template_name)
+    def get_template(self, template_kind, template_name):
+        template_uri = '{}_{}_uri'.format(template_kind, template_name)
         with open(getattr(EpubConfig, template_uri)) as template:
             content = template.read()
         return content

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from src.container.book import Book
+from src.container.initialbook import InitialBook
 from src.tools.type import Type
 
 
@@ -17,72 +17,57 @@ class SingleTask(object):
     def __init__(self):
         self.kind = ''
         self.spider = Spider()
-        self.book = Book()
+        self.book = InitialBook()
         return
 
 
-class TaskPackage():
+class TaskPackage(object):
     def __init__(self):
         self.work_list = {}
         self.book_list = {}
         return
 
     def add_task(self, single_task=SingleTask()):
-        if not single_task.kind in self.work_list:
+        if single_task.kind not in self.work_list:
             self.work_list[single_task.kind] = []
         self.work_list[single_task.kind].append(single_task.spider.href)
 
-        if not single_task.kind in self.book_list:
+        if single_task.kind not in self.book_list:
             self.book_list[single_task.kind] = []
         self.book_list[single_task.kind].append(single_task.book)
         return
 
     def get_task(self):
         if Type.answer in self.book_list:
-            self.merge_answer_book_list()
+            self.merge_question_book_list(book_type=Type.answer)
         if Type.question in self.book_list:
-            self.merge_question_book_list()
+            self.merge_question_book_list(book_type=Type.question)
         if Type.article in self.book_list:
             self.merge_article_book_list()
         return self
 
     def merge_article_book_list(self):
         book_list = self.book_list[Type.article]
-        book = Book()
-        answer = []
-        for item in book_list:
-            answer.append(item.sql.answer)
+        book = InitialBook()
+        answer = [item.sql.answer for item in book_list]
+        info = [item.sql.info for item in book_list]
         book.kind = Type.article
+        book.sql.info = 'select * from Article where ({})'.format(' or '.join(info))
         book.sql.answer = 'select * from Article where ({})'.format(' or '.join(answer))
         self.book_list[Type.article] = [book]
         return
 
-    def merge_answer_book_list(self):
-        book_list = self.book_list[Type.answer]
-        book = Book()
-        question = []
-        answer = []
-        for item in book_list:
-            question.append(item.sql.question)
-            answer.append(item.sql.answer)
-        book.kind = Type.answer
+    def merge_question_book_list(self, book_type):
+        book_list = self.book_list[book_type]
+        book = InitialBook()
+        question = [item.sql.question for item in book_list]
+        answer = [item.sql.answer for item in book_list]
+        info = [item.sql.info for item in book_list]
+        book.kind = book_type
+        book.sql.info = 'select * from Question where ({})'.format(' or '.join(info))
         book.sql.question = 'select * from Question where ({})'.format(' or '.join(question))
         book.sql.answer = 'select * from Answer where ({})'.format(' or '.join(answer))
-        self.book_list[Type.answer] = [book]
-        return
-
-    def merge_question_book_list(self):
-        book_list = self.book_list[Type.question]
-        book = Book()
-        question = []
-        answer = []
-        for item in book_list:
-            question.append(item.sql.question)
-            answer.append(item.sql.answer)
-        book.kind = Type.question
-        book.sql.question = 'select * from Question where ({})'.format(' or '.join(question))
-        book.sql.answer = 'select * from Answer where ({})'.format(' or '.join(answer))
-        self.book_list[Type.question] = [book]
+        self.book_list[book_type] = [book]
         return
 
     def is_work_list_empty(self):

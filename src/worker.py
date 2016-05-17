@@ -76,6 +76,18 @@ class PageWorker(object):
         self.save()
         return
 
+    def reCreate_work_set(self, target_url , subUrl='',pageFlag ='?'):
+        if target_url in self.task_complete_set:
+            return
+        content = Http.get_content(target_url + subUrl)
+        if not content:
+            return
+        self.task_complete_set.add(target_url)
+        max_page = self.parse_max_page(content)
+        for page in range(max_page):
+            url = '{}{}{}page={}'.format(target_url, subUrl ,pageFlag, page + 1)
+            self.work_set.add(url)
+        return
     def create_work_set(self, target_url):
         if target_url in self.task_complete_set:
             return
@@ -89,6 +101,9 @@ class PageWorker(object):
             self.work_set.add(url)
         return
 
+    def create_work_set(self, target_url):
+        self.reCreate_work_set(target_url+'?nr=1&sort=created','&')
+        return
     def clear_work_set(self):
         self.work_set = set()
         return
@@ -161,14 +176,7 @@ class AuthorWorker(PageWorker):
     def create_work_set(self, target_url):
         if target_url in self.task_complete_set:
             return
-        content = Http.get_content(target_url + '/answers?order_by=vote_num')
-        if not content:
-            return
-        self.task_complete_set.add(target_url)
-        max_page = self.parse_max_page(content)
-        for page in range(max_page):
-            url = '{}/answers?order_by=vote_num&page={}'.format(target_url, page + 1)
-            self.work_set.add(url)
+        self.reCreate_work_set(target_url, '/answers?order_by=vote_num','&')
         return
 
     def catch_info(self, target_url):
@@ -193,16 +201,7 @@ class CollectionWorker(PageWorker):
         return
 
     def create_work_set(self, target_url):
-        if target_url in self.task_complete_set:
-            return
-        content = Http.get_content(target_url)
-        if not content:
-            return
-        self.task_complete_set.add(target_url)
-        max_page = self.parse_max_page(content)
-        for page in range(max_page):
-            url = '{}?page={}'.format(target_url, page + 1)
-            self.work_set.add(url)
+        self.reCreate_work_set(target_url)
         return
 
     def catch_info(self, target_url):
@@ -244,16 +243,7 @@ class TopicWorker(PageWorker):
         return
 
     def create_work_set(self, target_url):
-        if target_url in self.task_complete_set:
-            return
-        content = Http.get_content(target_url + '/top-answers')
-        if not content:
-            return
-        self.task_complete_set.add(target_url)
-        max_page = self.parse_max_page(content)
-        for page in range(max_page):
-            url = '{}/top-answers?page={}'.format(target_url, page + 1)
-            self.work_set.add(url)
+        self.reCreate_work_set(target_url,'/top-answers?')
         return
 
     def catch_info(self, target_url):

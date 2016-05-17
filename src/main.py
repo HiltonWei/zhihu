@@ -52,11 +52,13 @@ class ZhihuHelp(object):
         try:
             with open('./ReadList.txt', 'r') as read_list:
                 counter = 1
+                read_list = list(set(read_list)) #去重
                 for line in read_list:
                     line = line.replace(' ', '').replace('\r', '').replace('\n', '').replace('\t', '')  # 移除空白字符
                     self.create_book(line, counter)  # 一行内容代表一本电子书
                     counter += 1
         except IOError as e:
+            Debug.logger.info(u"error")
             with open('./ReadList.txt', 'w') as read_list:
                 read_list.close()
 

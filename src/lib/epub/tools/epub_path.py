@@ -39,7 +39,7 @@ class EpubPath(object):
         EpubPath.set_work_path(work_path)
         Path.mkdir(EpubPath.meta_inf_path)
         Path.mkdir(EpubPath.oebps_path)
-        Path.chdir(EpubPath.oebps_path)
+        Path.chdir(EpubPath.oebps_path)#特殊字符时 windows下会报错 windowError 123
         Path.mkdir(EpubPath.html_path)
         Path.mkdir(EpubPath.image_path)
         Path.mkdir(EpubPath.style_path)

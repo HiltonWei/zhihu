@@ -10,7 +10,8 @@ from src.tools.match import Match
 from src.tools.path import Path
 from src.tools.template_config import TemplateConfig
 from src.tools.type import Type
-
+from src.tools.config import Config
+from src.tools.debug import Debug
 
 class Book(object):
     u"""
@@ -123,12 +124,15 @@ class Book(object):
         epub.set_language(u'zh')
         epub.set_book_id()
         epub.set_output_path(Path.result_path)
+        print Path.result_path
         epub.add_css(Path.base_path + u'/www/css/markdown.css')
         epub.add_css(Path.base_path + u'/www/css/customer.css')
         epub.add_css(Path.base_path + u'/www/css/normalize.css')
         epub.add_css(Path.base_path + u'/www/css/bootstrap.css')
+        
         for book in book_package.book_list:
             page = book.page_list[0]
+            
             with open(html_tmp_path + page.filename, u'w') as html:
                 html.write(page.content)
             if '_' in page.title:
@@ -136,6 +140,7 @@ class Book(object):
             epub.create_chapter(html_tmp_path + page.filename, page.title)
             for page in book.page_list[1:]:
                 with open(html_tmp_path + page.filename, u'w') as html:
+                    
                     html.write(page.content)
                 epub.add_html(html_tmp_path + page.filename, page.title)
             epub.finish_chapter()
@@ -173,6 +178,13 @@ class Book(object):
 
     def create(self):
         for book_package in self.book_list:
-            self.create_book(book_package)
-            self.create_single_html_book(book_package)
+            try:
+                self.create_book(book_package)
+            except Exception as e:
+                print e
+                
+            try:
+                self.create_single_html_book(book_package)
+            except Exception as e:
+                print e
         return

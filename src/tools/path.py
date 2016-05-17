@@ -19,6 +19,7 @@ class Path(object):
     html_pool_path = base_path + u'/知乎电子书临时资源库/知乎网页池'
     image_pool_path = base_path + u'/知乎电子书临时资源库/知乎图片池'
     result_path = base_path + u'/知乎助手生成的电子书'
+    answer_path = base_path + u'./答案'
 
     @staticmethod
     def reset_path():
@@ -43,15 +44,25 @@ class Path(object):
             # Debug.logger.debug(u'指定目录已存在')
             pass
         return
+        
+    @staticmethod
+    def mkdirs(path):
+        try:
+            os.makedirs(path)
+        except Exception:
+            return False
+        return True
 
     @staticmethod
     def chdir(path):
         try:
             os.chdir(path)
-        except OSError:
+        except Exception as e:
             # Debug.logger.debug(u'指定目录不存在，自动创建之')
+            print e
             Path.mkdir(path)
             os.chdir(path)
+            
         return
 
     @staticmethod
@@ -89,6 +100,7 @@ class Path(object):
         Path.html_pool_path = Path.base_path + u'/知乎电子书临时资源库/知乎网页池'
         Path.image_pool_path = Path.base_path + u'/知乎电子书临时资源库/知乎图片池'
         Path.result_path = Path.base_path + u'/知乎助手生成的电子书'
+        Path.answer_path = Path.base_path + u'./答案'
 
         return
 
@@ -100,9 +112,16 @@ class Path(object):
         Path.chdir(u'./知乎电子书临时资源库')
         Path.mkdir(u'./知乎网页池')
         Path.mkdir(u'./知乎图片池')
+        Path.mkdir(u'./答案')
         Path.reset_path()
         return
 
     @staticmethod
     def is_file(path):
         return os.path.isfile(path)
+    @staticmethod
+    def is_dir(path):
+        return os.path.isdir(path)
+    @staticmethod
+    def join_dir(path,filename):
+        return os.path.join(path,filename)

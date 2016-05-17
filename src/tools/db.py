@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from debug import Debug
 from src.tools.type import Type
-
+from src.tools.path import Path
+import hashlib
 
 class DB(object):
     u'''
@@ -27,10 +28,14 @@ class DB(object):
 
     @staticmethod
     def save(data={}, table_name=''):
+        if table_name == 'Answer':
+            Ans2File.addFileSave(data)
         sql = "replace into {table_name} ({columns}) values ({items})".format(table_name=table_name,
                                                                               columns=','.join(data.keys()),
                                                                               items=(',?' * len(data.keys()))[1:])
-        Debug.logger.debug(sql)
+        # BaseClass.logger.debug(sql)
+        if not data:#空数据
+            return
         DB.cursor.execute(sql, tuple(data.values()))
         return
 
@@ -74,3 +79,67 @@ class DB(object):
 
             Type.collection_index: ('collection_id', 'href',), Type.topic_index: ('topic_id', 'href',), }
         return {k: v for (k, v) in zip(template[kind], result)}
+
+    #答案转换为文件
+class Ans2File(object):
+    @staticmethod
+    def filepath(answertmp = []):
+        if answertmp:
+            answerpath = Path.answer_path+'/Answer_qid_aid/'+'{0}'.format(answertmp['question_id'])
+        if not Path.is_dir(answerpath):
+            Path.mkdirs(answerpath)
+        filename = '{0}'.format(answertmp['question_id'])+'_'+'{0}'.format(answertmp['answer_id'])+'.txt'
+        return Path.join_dir(answerpath,filename)
+
+    @staticmethod
+    def addFileSave(answertmp={}):
+        save_content = hashlib.md5(answertmp['content']).hexdigest()
+        filepath_name = Ans2File.filepath(answertmp)
+
+        def isUpdateContent( save_content ,questionID , answerID):#是否更答案文本内容
+            answerHref = 'http://www.zhihu.com/question/{0}/answer/{1}'.format(questionID, answerID)
+            Var = DB.cursor.execute(
+                    "select content from Answer  where href = ?", (answerHref,)).fetchone()
+            if not Var:
+                Debug.logger.debug(u'读答案md5失败')
+                return False #初始为空 则默认插入
+            return Var[0] == save_content
+
+        bsaved = isUpdateContent(save_content , answertmp['question_id'] , answertmp['answer_id'])
+        if not Path.is_file(filepath_name):
+            bsaved = False#数据库中有，文件没有
+        if not bsaved :
+            Ans2File.svContent2File(filepath_name , answertmp['content'])
+        answertmp['content'] = str(save_content)
+        return
+
+    @staticmethod
+    def svContent2File( filepath_name , contentInHttp):
+        contentBefore=''
+        if Path.is_file(filepath_name):
+            with open(filepath_name ,'r') as f:
+                contentBefore = f.read()
+
+        def calcContent(contentBefore ,contentSave):#计算内容 是否保存
+            strContentSave = contentSave
+            contentBefore = unicode(contentBefore, errors='ignore')
+            if (contentSave.find(contentBefore[10:]) == -1):
+                strContentSave += '\n -----------------------------------------答案更新分割线------------------\n'
+                strContentSave += contentBefore
+            return strContentSave
+            
+        content2SV = calcContent(contentBefore , contentInHttp)
+        with open(filepath_name ,'w') as f:
+            f.write(content2SV)
+        return
+
+    @staticmethod
+    def getAnswerContentFromFile( answertmp = {}):
+        if not answertmp:
+            return
+        filepath_name = Ans2File.filepath(answertmp)
+        if Path.is_file(filepath_name):
+            with open(filepath_name, 'r') as f:
+                fileContent = f.read()
+                answertmp['content'] = fileContent
+        return

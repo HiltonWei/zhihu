@@ -43,7 +43,6 @@ class ReadListParser():
             raw_task = ReadListParser.parse_command(command)
             if raw_task:
                 raw_task_list.append(raw_task)
-
         task_package = ReadListParser.merge_task_list(raw_task_list)
         return task_package
 

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from src.container.image import ImageContainer
 from src.tools.config import Config
-from src.tools.db import DB
+from src.tools.db import DB,Ans2File
 from src.tools.extra_tools import ExtraTools
 from src.tools.match import Match
 from src.tools.type import Type
+from src.tools.path import Path
 
 
 class InitialBook(object):
@@ -58,7 +59,9 @@ class InitialBook(object):
             elif self.kind == Type.article:
                 info = self.catch_article_book_info(self.sql.info)
             else:
-                info = DB.cursor.execute(self.sql.info).fetchone()
+                info = DB.cursor.execute(self.sql.info).fetchone()#为空返回none
+                if not info:
+                    return
                 info = DB.wrap(Type.info_table[self.kind], info)
         self.set_info(info)
         return
@@ -122,6 +125,7 @@ class InitialBook(object):
             question_dict = {x['question_id']: {'question': x.copy(), 'answer_list': [], 'agree': 0} for x in
                              question_list}
             for answer in answer_list:
+                Ans2File.getAnswerContentFromFile(answer)
                 question_dict[answer['question_id']]['answer_list'].append(answer)
             return question_dict.values()
 
